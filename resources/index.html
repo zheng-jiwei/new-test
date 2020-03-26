@@ -12,9 +12,23 @@
 					<td width="50%" class="valign-top">
 						<a href="javascript:login()" id="login">ログイン</a><a href="javascript:logout()" id="logout" style="display:none">ログアウト</a>
 						<div style="text-align:left">
-								<span>都道府県：</span>
+								<span>配送方法：</span>
+								<select type="text" id="post_type">
+									<option value="宅配便">宅配便</option>
+									<option value="メール便">メール便</option>
+								</select>
+							</div>
+						<div style="text-align:left">
+								<span>地域：</span>
 								<select type="text" id="province_select">
 									<option value="北海道">北海道</option>
+									<option value="東北">東北</option>
+									<option value="中部">中部</option>
+									<option value="関東">関東</option>
+									<option value="近畿">近畿</option>
+									<option value="中国">中国</option>
+									<option value="四国">四国</option>
+									<option value="九州">九州</option>
 								</select>
 							</div>
 							<div style="text-align:left">
@@ -27,18 +41,26 @@
 									<option value="15000">&gt;=10kg</option>
 								</select>
 							</div>
+							<div style="text-align:left">
+								<span>配送時間：</span>
+								<select type="text" id="time_select">
+									<option value="時間指定なし">-</option>
+									<option value="12時以前">12時前</option>
+									<option value="12時以後">12時以後</option>
+								</select>
+							</div>
 							<span>商品総額：</span>
 							<div style="margin-bottom:20px"><input type="text" id="price" value="10000" size="50"/>円</div>
 							<div style="margin-top:60px">
 								<span id="delivery_price"></span>
 							</div>
 						</div>
+						<div style="margin-left:auto;margin-right:auto; margin-top:60px; text-align:right">
+							<input type="button" value="計算" onclick="submitPost()"/>
+						</div>
 					</td>
 				</tr>
 			</table>
-			<div style="margin-left:auto;margin-right:auto; margin-top:60px; text-align:right">
-				<input type="button" value="計算" onclick="submitPost()"/>
-			</div>
 		</form>
 	</div>
 	<script>
@@ -70,8 +92,10 @@
 
 	function submitPost() {
 		let data = {};
+		data.post_type = encodeURIComponent(document.getElementById("post_type").value);
 		data.province_select = encodeURIComponent(document.getElementById("province_select").value);
 		data.weight_select = document.getElementById("weight_select").value;
+		data.time_select = encodeURIComponent(document.getElementById("time_select").value);
 		data.price = document.getElementById("price").value;
 	  $.ajax({
 	    type: 'POST',
@@ -81,10 +105,15 @@
 	    dataType: 'json',
 	    cache: false,
 	  }).done(function(result) {
-			if(get_value_from_cookie("member") == ""){
-				document.getElementById("delivery_price").innerHTML="非会員送料：" + result.result;
+			if(result.result.error){
+				alert(result.result.error);
 			}else{
-				document.getElementById("delivery_price").innerHTML="会員送料：" + result.result;
+				let str_price = Number(result.result).toLocaleString('ja-JP', { style: 'currency', currency: "JPY", minimumFractionDigits: 0, maxmumFractionDigits: 0});
+				if(get_value_from_cookie("member") == ""){
+					document.getElementById("delivery_price").innerHTML="非会員送料：" + str_price;
+				}else{
+					document.getElementById("delivery_price").innerHTML="会員送料：" + str_price;
+				}
 			}
 	  }).fail(function(error) {
 	    console.log(error);

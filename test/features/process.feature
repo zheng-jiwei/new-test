@@ -1,7 +1,11 @@
 Feature: Process
-  運賃を検索する機能
-  各種状況の運賃の正しさを確認する.
+  運賃を検索する機能、各種状況の運賃の正しさを確認する.
+  シナリオによって実装は下記の2パターンがある
+    #固定条件をgivenに入れて、可変条件はwhenに入れて、計算と結果の判別はthenにいれるパターン
+    #条件を全部givenに入れて、actionはwhenに入れて、結果の判別のみthenにいれるパターン（通常利用されるみたいです）
 
+
+  #固定条件をgivenに入れて、可変条件はwhenに入れて、計算と結果の判別はthenにいれるパターン
   Scenario: "北海道"までの通常運賃
     Given "非会員"の場合、購入商品の総額10000円の荷物を"北海道"まで運送する
     When 重さ<1kg
@@ -41,3 +45,226 @@ Feature: Process
     Given "会員"は重さ10kgの商品を"北海道"まで運送する
     When 購入商品の総額は20000円
     Then 送料は0円
+
+  Scenario: 宅配便はメール便より高いの確認
+    Given "非会員"は重さ10kgの5000円商品を"北海道"まで運送する
+    When "宅配便"を利用する
+    Then 送料は1500円
+    When "メール便"を利用する
+    Then 送料は600円
+
+  Scenario: 配送時間指定されるの確認。
+    Given "非会員"は重さ10kgの5000円商品を"北海道"まで運送する
+    When "宅配便"で配送時間は"12時以前"を指定する
+    Then 送料は1550円
+    When "宅配便"で配送時間は"時間指定なし"を指定する
+    Then 送料は1500円
+    When "メール便"で配送時間は"時間指定"を指定する
+    Then エラーメッセージ"メール便の時間指定はサポートしない"が表示
+
+
+  #条件を全部givenに入れて、actionはwhenに入れて、結果の判別はthenにいれるパターン
+  Scenario: 運賃検索の所要時間
+    Given "非会員"は重さ10kgの5000円商品を"北海道"まで運送する
+    When ファンクション"clojure.process/calculate_delivery_price"を呼ぶ
+    Then 所要時間は<0.1秒
+
+
+  #########
+  #以下は地域毎の料金テスト（北海道と同じテストファンクションを利用している）
+  #########
+  Scenario: "東北"までの通常運賃(1)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ<1kg
+    Then 運賃は450円
+  Scenario: "東北"までの通常運賃(2)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ>=1kg且つ重さ<2kg
+    Then 運賃は550円
+  Scenario: "東北"までの通常運賃(3)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ>=2kg且つ重さ<5kg
+    Then 運賃は750円
+  Scenario: "東北"までの通常運賃(4)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ>=5kg且つ重さ<10kg
+    Then 運賃は950円
+  Scenario: "東北"までの通常運賃(5)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ>=10kg
+    Then 運賃は1200円
+  Scenario: "東北"までの通常運賃(6)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ=1.5kg
+    Then 運賃は550円
+  Scenario: "東北"までの通常運賃(7)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ=1kg
+    Then 運賃は550円
+  Scenario: "東北"までの通常運賃(8)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ=2kg
+    Then 運賃は750円
+  Scenario: "東北"までの通常運賃(9)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ=5kg
+    Then 運賃は950円
+  Scenario: "東北"までの通常運賃(A)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ=10kg
+    Then 運賃は1200円
+  Scenario: "東北"までの通常運賃(B)
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"東北"まで運送する
+    When 重さ=10.1kg
+    Then 運賃は1200円
+
+
+  Scenario: "中部"までの通常運賃
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"中部"まで運送する
+    When 重さ<1kg
+    Then 運賃は400円
+    When 重さ>=1kg且つ重さ<2kg
+    Then 運賃は500円
+    When 重さ>=2kg且つ重さ<5kg
+    Then 運賃は700円
+    When 重さ>=5kg且つ重さ<10kg
+    Then 運賃は900円
+    When 重さ>=10kg
+    Then 運賃は1000円
+    When 重さ=1.5kg
+    Then 運賃は500円
+    When 重さ=1kg
+    Then 運賃は500円
+    When 重さ=2kg
+    Then 運賃は700円
+    When 重さ=5kg
+    Then 運賃は900円
+    When 重さ=10kg
+    Then 運賃は1000円
+    When 重さ=10.1kg
+    Then 運賃は1000円
+
+  Scenario: "関東"までの通常運賃
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"関東"まで運送する
+    When 重さ<1kg
+    Then 運賃は300円
+    When 重さ>=1kg且つ重さ<2kg
+    Then 運賃は400円
+    When 重さ>=2kg且つ重さ<5kg
+    Then 運賃は500円
+    When 重さ>=5kg且つ重さ<10kg
+    Then 運賃は600円
+    When 重さ>=10kg
+    Then 運賃は900円
+    When 重さ=1.5kg
+    Then 運賃は400円
+    When 重さ=1kg
+    Then 運賃は400円
+    When 重さ=2kg
+    Then 運賃は500円
+    When 重さ=5kg
+    Then 運賃は600円
+    When 重さ=10kg
+    Then 運賃は900円
+    When 重さ=10.1kg
+    Then 運賃は900円
+
+  Scenario: "近畿"までの通常運賃
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"近畿"まで運送する
+    When 重さ<1kg
+    Then 運賃は400円
+    When 重さ>=1kg且つ重さ<2kg
+    Then 運賃は500円
+    When 重さ>=2kg且つ重さ<5kg
+    Then 運賃は600円
+    When 重さ>=5kg且つ重さ<10kg
+    Then 運賃は900円
+    When 重さ>=10kg
+    Then 運賃は1200円
+    When 重さ=1.5kg
+    Then 運賃は500円
+    When 重さ=1kg
+    Then 運賃は500円
+    When 重さ=2kg
+    Then 運賃は600円
+    When 重さ=5kg
+    Then 運賃は900円
+    When 重さ=10kg
+    Then 運賃は1200円
+    When 重さ=10.1kg
+    Then 運賃は1200円
+
+  Scenario: "中国"までの通常運賃
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"中国"まで運送する
+    When 重さ<1kg
+    Then 運賃は500円
+    When 重さ>=1kg且つ重さ<2kg
+    Then 運賃は600円
+    When 重さ>=2kg且つ重さ<5kg
+    Then 運賃は800円
+    When 重さ>=5kg且つ重さ<10kg
+    Then 運賃は1000円
+    When 重さ>=10kg
+    Then 運賃は1500円
+    When 重さ=1.5kg
+    Then 運賃は600円
+    When 重さ=1kg
+    Then 運賃は600円
+    When 重さ=2kg
+    Then 運賃は800円
+    When 重さ=5kg
+    Then 運賃は1000円
+    When 重さ=10kg
+    Then 運賃は1500円
+    When 重さ=10.1kg
+    Then 運賃は1500円
+
+  Scenario: "四国"までの通常運賃
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"四国"まで運送する
+    When 重さ<1kg
+    Then 運賃は550円
+    When 重さ>=1kg且つ重さ<2kg
+    Then 運賃は650円
+    When 重さ>=2kg且つ重さ<5kg
+    Then 運賃は850円
+    When 重さ>=5kg且つ重さ<10kg
+    Then 運賃は1100円
+    When 重さ>=10kg
+    Then 運賃は1800円
+    When 重さ=1.5kg
+    Then 運賃は650円
+    When 重さ=1kg
+    Then 運賃は650円
+    When 重さ=2kg
+    Then 運賃は850円
+    When 重さ=5kg
+    Then 運賃は1100円
+    When 重さ=10kg
+    Then 運賃は1800円
+    When 重さ=10.1kg
+    Then 運賃は1800円
+
+  Scenario: "九州"までの通常運賃
+    Given "非会員"の場合、購入商品の総額10000円の荷物を"九州"まで運送する
+    When 重さ<1kg
+    Then 運賃は600円
+    When 重さ>=1kg且つ重さ<2kg
+    Then 運賃は700円
+    When 重さ>=2kg且つ重さ<5kg
+    Then 運賃は900円
+    When 重さ>=5kg且つ重さ<10kg
+    Then 運賃は1200円
+    When 重さ>=10kg
+    Then 運賃は2000円
+    When 重さ=1.5kg
+    Then 運賃は700円
+    When 重さ=1kg
+    Then 運賃は700円
+    When 重さ=2kg
+    Then 運賃は900円
+    When 重さ=5kg
+    Then 運賃は1200円
+    When 重さ=10kg
+    Then 運賃は2000円
+    When 重さ=10.1kg
+    Then 運賃は2000円
