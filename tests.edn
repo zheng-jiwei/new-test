@@ -1,0 +1,15 @@
+#kaocha/v1
+{:tests [{:id           :unit
+          :type         :kaocha.type/clojure.test
+          :source-paths ["src"]
+          :test-paths   ["test"]}
+
+         {:id                  :features
+          :type                :kaocha.type/cucumber
+          :source-paths        ["src"]
+          :test-paths          ["test/features"]
+          :cucumber/glue-paths ["test/steps_definitions"]
+          ;:cucumber/locale     "de-DE"  ; optional. Currently only for number
+                                        ; format parsing, passed to
+                                        ; java.util.Locale/forLanguageTag
+          }]}

@@ -1,0 +1,104 @@
+<html>
+<head><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<script type="text/javascript" src="https://libs.cmsod.jp/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<title>delivery cost</title>
+</head>
+<body style="height: auto; min-height: auto;">
+	<div style="text-align:center; width: 100%;">
+		<form method="post" action="/calculate">
+			<table style="margin-left:auto;margin-right:auto; margin-top:60px">
+				<tr>
+					<td width="50%" class="valign-top">
+						<a href="javascript:login()" id="login">ログイン</a><a href="javascript:logout()" id="logout" style="display:none">ログアウト</a>
+						<div style="text-align:left">
+								<span>都道府県：</span>
+								<select type="text" id="province_select">
+									<option value="北海道">北海道</option>
+								</select>
+							</div>
+							<div style="text-align:left">
+								<span>商品の重さ：</span>
+								<select type="text" id="weight_select">
+									<option value="500">&lt;1kg</option>
+									<option value="1500">&gt;=1kg and &lt;2kg</option>
+									<option value="2500">&gt;=2kg and &lt;5kg</option>
+									<option value="8000">&gt;=5kg and &lt;10kg</option>
+									<option value="15000">&gt;=10kg</option>
+								</select>
+							</div>
+							<span>商品総額：</span>
+							<div style="margin-bottom:20px"><input type="text" id="price" value="10000" size="50"/>円</div>
+							<div style="margin-top:60px">
+								<span id="delivery_price"></span>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+			<div style="margin-left:auto;margin-right:auto; margin-top:60px; text-align:right">
+				<input type="button" value="計算" onclick="submitPost()"/>
+			</div>
+		</form>
+	</div>
+	<script>
+	function get_value_from_cookie(key) {
+	  let cookies = document.cookie.split(";");
+	  let result = "";
+	  cookies.forEach(item => {
+	    item = item.trim();
+	    let currentCookie = item.split("=");
+	    if (currentCookie[0] == key) {
+	      result = currentCookie[1];
+	    }
+	  });
+	  return decodeURIComponent(result);
+	}
+
+	function login(){
+		var now = new Date();
+		var time = now.getTime();
+		var expireTime = time + 30*24*1000*3600;
+		now.setTime(expireTime);
+		document.cookie= "member=ok; Path=/; Expires=" + now.toGMTString();
+		document.location.reload();
+	}
+	function logout(){
+		document.cookie = "member=; path=/; expires=0; max-age=-1";
+		document.location.reload();
+	}
+
+	function submitPost() {
+		let data = {};
+		data.province_select = encodeURIComponent(document.getElementById("province_select").value);
+		data.weight_select = document.getElementById("weight_select").value;
+		data.price = document.getElementById("price").value;
+	  $.ajax({
+	    type: 'POST',
+	    timeout: 5000,
+	    url: "http://localhost:8080/calculate",
+	    data: data,
+	    dataType: 'json',
+	    cache: false,
+	  }).done(function(result) {
+			if(get_value_from_cookie("member") == ""){
+				document.getElementById("delivery_price").innerHTML="非会員送料：" + result.result;
+			}else{
+				document.getElementById("delivery_price").innerHTML="会員送料：" + result.result;
+			}
+	  }).fail(function(error) {
+	    console.log(error);
+	  })
+	}
+
+
+	if(get_value_from_cookie("member") == ""){
+		document.getElementById("login").style.display = "block";
+		document.getElementById("logout").style.display = "none";
+	}else{
+		document.getElementById("login").style.display = "none";
+		document.getElementById("logout").style.display = "block";
+	}
+	</script>
+</body>
+</html>
