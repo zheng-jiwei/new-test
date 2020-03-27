@@ -12,14 +12,12 @@
                  [ring/ring-codec "1.1.0"]
                  ]
   :plugins [[lein-ring "0.12.5"]
-          [com.siili/lein-cucumber "1.0.7"]
             ]
   :ring {:handler clojure.handler/app :port 8080}
   :profiles
   {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                         [ring/ring-mock "0.3.0"]
-                        [com.siili/lein-cucumber "1.0.7"]]}}
-  :cucumber-feature-paths ["test/features/"]
+                      ]}}
    :test-paths ["test"]
    :test-selectors {:default (complement :all)
 	 			   :user001 :user001
