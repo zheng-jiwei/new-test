@@ -93,57 +93,64 @@
 
 (When #"^購入商品の総額は(\d+)円$" [arg1]
   (swap! prepare_info assoc :total_price arg1)
-  )
-
-(Then #"^送料は(\d+)円$" [arg1]
-  (assert (= arg1 (str (calculate_delivery_price (:is_member @prepare_info)
+  (swap! prepare_info assoc :delivery_price (calculate_delivery_price (:is_member @prepare_info)
                                    (:total_price @prepare_info)
                                    (:total_weight @prepare_info)
                                    (:position @prepare_info)
                                    (:post_type @prepare_info)
                                    (:delivery_time @prepare_info)
-                                   ))))
+                                   ))
   )
 
 (Given #"^\"([^\"]*)\"は重さ(\d+)kgの(\d+)円商品を\"([^\"]*)\"まで運送する$" [arg1 arg2 arg3 arg4]
   (init_prepare)
-  (swap! prepare_info assoc :is_member (= "会員" arg1) :total_weight (* 1000 (str-to-int arg2)) :total_price arg3 :position arg4)
+  (swap! prepare_info assoc :is_member (= "会員" arg1) :total_weight (* 1000 (str-to-int arg2))
+         :total_price arg3 :position arg4)
     )
 
 (When #"^ファンクション\"([^\"]*)\"を呼ぶ$" [arg1]
     (swap! prepare_info assoc :reserve1 arg1)
+    (let [time_start (.getTime (Date.))
+          function_name (str/split arg1 #"\/")
+          _ ((ns-resolve (symbol (get function_name 0)) (symbol (get function_name 1)))
+                                  (:is_member @prepare_info)
+                                  (:total_price @prepare_info)
+                                   (:total_weight @prepare_info)
+                                   (:position @prepare_info)
+                         )
+          time_end (.getTime (Date.))]
+          (swap! prepare_info assoc :reserve2 (/ (- time_end time_start) 1000))
+      )
   )
 
 (Then #"^所要時間は([>|<|=])([0-9]+[\.]?[0-9]*)秒$" [arg1 arg2]
-      (let [time_start (.getTime (Date.))
-            function_name (str/split (:reserve1 @prepare_info) #"\/")
-            _ ((ns-resolve (symbol (get function_name 0)) (symbol (get function_name 1)))
-                                    (:is_member @prepare_info)
-                                    (:total_price @prepare_info)
-                                     (:total_weight @prepare_info)
-                                     (:position @prepare_info)
-                           )
-            time_end (.getTime (Date.))
-            limit_time (Float/parseFloat arg2)
-            ]
-            (assert ((resolve (symbol arg1)) (/ (- time_end time_start) 1000) limit_time))
-        )
-      )
+  (assert ((resolve (symbol arg1)) (:reserve2 @prepare_info) (Float/parseFloat arg2)))
+  )
 
 (When #"^\"([^\"]*)\"を利用する$" [arg1]
   (swap! prepare_info assoc :post_type arg1)
-      )
+  (swap! prepare_info assoc :delivery_price
+    (calculate_delivery_price (:is_member @prepare_info)
+                                     (:total_price @prepare_info)
+                                     (:total_weight @prepare_info)
+                                     (:position @prepare_info)
+                                      (:post_type @prepare_info)
+                                      (:delivery_time @prepare_info)
+                                     ))
+  )
 
 (When #"^\"([^\"]*)\"で配送時間は\"([^\"]*)\"を指定する$" [arg1 arg2]
   (swap! prepare_info assoc :post_type arg1 :delivery_time arg2)
-    )
+  (swap! prepare_info assoc :delivery_price
+    (calculate_delivery_price (:is_member @prepare_info)
+                                     (:total_price @prepare_info)
+                                     (:total_weight @prepare_info)
+                                     (:position @prepare_info)
+                                      (:post_type @prepare_info)
+                                      (:delivery_time @prepare_info)
+                                     ))
+  )
 
 (Then #"^エラーメッセージ\"([^\"]*)\"が表示$" [arg1]
-  (assert (= arg1 (:error (calculate_delivery_price (:is_member @prepare_info)
-                                   (:total_price @prepare_info)
-                                   (:total_weight @prepare_info)
-                                   (:position @prepare_info)
-                                    (:post_type @prepare_info)
-                                    (:delivery_time @prepare_info)
-                                   ))))
+  (assert (= arg1 (-> @prepare_info :delivery_price :error)))
   )

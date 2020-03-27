@@ -179,15 +179,12 @@
       )
     )
   ([is_member total_price total_weight position post_type delivery_time]
-    (if (and (= post_type "メール便") (not= delivery_time "時間指定なし"))
+    (if (and (= post_type "メール便") (not (nil? delivery_time)) (not= delivery_time "時間指定なし"))
       {:error "メール便の時間指定はサポートしない"}
       (let [result (calculate_delivery_price is_member total_price total_weight position post_type)]
-        (if (= "時間指定なし" delivery_time)
+        (if (or (nil? delivery_time) (= "時間指定なし" delivery_time) (>= (str-to-int (str total_price)) price_limit))
           result
-          (if (= 0 result)
-            result
-            (+ 50 result)
-            )
+          (+ 50 result)
           )
         )
       )
