@@ -159,7 +159,7 @@
    (swap! prepare_info assoc :post_type arg1 :delivery_time arg2)
    (run_call_function @prepare_info)
   )
-;Scenario-5: 配送時間指定されるの確認
+;Scenario-5: 配送時間指定されるかされないかの料金が異なるの確認
 (deftest ^:user001 test-delivery-price-by-Scenario-5
   (testing "Scenario-5: 配送時間指定されるの確認\n"
     (testing "Given '非会員'は重さ10kgの5000円商品を'北海道'まで運送する\n"
@@ -202,7 +202,7 @@
      )
   )
 
-;Scenario-7 デフォルト配送方法は宅配便
+;Scenario-7 配送方法は指定しない場合、デフォルトは'宅配便'を利用するの確認
 (deftest ^:user001 test-delivery-price-by-Scenario-7
   (testing "Scenario-6:  デフォルト配送方法は宅配便\n"
     (testing "Given '非会員'は重さ10kgの5000円商品を'北海道'まで運送する\n"
@@ -217,7 +217,7 @@
      )
   )
 
-;Scenario-8 デフォルト配送時間指定は'時間指定なし'
+;Scenario-8 配送時間は指定しない場合、デフォルトは'時間指定なし'を利用するの確認
 (deftest ^:user001 test-delivery-price-by-Scenario-8
   (testing "Scenario-6: デフォルト配送時間指定は'時間指定なし'\n"
     (testing "Given '非会員'は重さ10kgの5000円商品を'北海道'まで運送する\n"
